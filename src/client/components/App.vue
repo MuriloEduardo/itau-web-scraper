@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import FinanceComponent from "./components/FinanceComponent.vue";
+import FinanceComponent from "./FinanceComponent.vue";
 
 export default {
   name: "app",

@@ -46,7 +46,7 @@
 <script>
 import { mask } from "vue-the-mask";
 
-import FinanceService from "../FinanceService";
+import FinanceService from "../services/FinanceService";
 
 export default {
   name: "FinanceComponent",

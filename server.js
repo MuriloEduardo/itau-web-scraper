@@ -8,10 +8,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const finances = require("./routes/api/finances");
+const finances = require("./src/server/routes/api/finances");
 
 app.use("/api/finances", finances);
 
 const port = process.env.PORT || 5000;
 
+// eslint-disable-next-line no-console
 app.listen(port, () => console.log(`Server started on port ${port}`));
