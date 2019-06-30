@@ -1,77 +1,132 @@
 const puppeteer = require("puppeteer");
 
 module.exports = async credentials => {
+    if (!credentials.agency || !credentials.account || !credentials.password) {
+        return { error: "Missing information" };
+    }
+
     //
     // Configurações
     //
     const browser = await puppeteer.launch({
-        headless: true
+        headless: false,
+        devtools: true
     });
 
     const page = await browser.newPage();
 
-    await page.goto("https://www.itau.com.br/index.html", {
-        waitUntil: "networkidle2"
-    });
+    await page.goto("https://www.itau.com.br/index.html");
 
     //
+    // 1
     // Agencia e Conta
     //
-    await page.waitForSelector("#campo_agencia");
+    try {
+        await page.waitForSelector("#campo_agencia");
+    } catch (e) {
+        if (e instanceof puppeteer.errors.TimeoutError) {
+            // Do something if this is a timeout.
+        }
+    }
 
     await page.type("#campo_agencia", credentials.agency);
     await page.type("#campo_conta", credentials.account);
 
-    await page.click(".btnSubmit");
-
     //
-    // Senha
+    // 2
+    // Digitar senha e clicar para submitar
     //
-    await page.waitForSelector("#senha");
+    try {
+        try {
+            await Promise.all([
+                page.waitForSelector("#senha"),
+                page.click(".btnSubmit")
+            ]);
+        } catch (error) {
+            await browser.close();
 
-    const keys = await page.evaluate(resultsSelector => {
-        const anchors = Array.from(document.querySelectorAll(resultsSelector));
-        return anchors.map(anchor => {
-            return anchor.textContent.trim();
-        });
-    }, "a.campoTeclado");
+            return { error: "Something is wrong with agency and account" };
+        }
 
-    const getKeyText = digit => {
-        return keys.filter(key => {
-            return key.indexOf(digit) != -1;
-        });
-    };
+        const keys = await page.evaluate(resultsSelector => {
+            const anchors = Array.from(
+                document.querySelectorAll(resultsSelector)
+            );
 
-    const arrPassword = Array.from(credentials.password);
+            return anchors.map(anchor => {
+                return anchor.textContent.trim();
+            });
+        }, "a.campoTeclado");
 
-    for (let index = 0; index < arrPassword.length; index++) {
-        const digit = arrPassword[index];
-        await page.$eval(`[aria-label='${getKeyText(digit)}']`, btn =>
-            btn.click()
-        );
+        const getKeyText = digit => {
+            return keys.filter(key => {
+                return key.indexOf(digit) != -1;
+            });
+        };
+
+        const arrPassword = Array.from(credentials.password);
+
+        //
+        // Loop para clicar nas teclas de senha
+        // No banco Itaú não é inserido direto do teclado a senha
+        // É necessario usar o mouse e clicar nas teclas do homebanking
+        // E é isso que esse trecho de código abaixo faz
+        //
+        for (let index = 0; index < arrPassword.length; index++) {
+            const digit = arrPassword[index];
+            await page.$eval(`[aria-label='${getKeyText(digit)}']`, btn =>
+                btn.click()
+            );
+        }
+    } catch (e) {
+        if (e instanceof puppeteer.errors.TimeoutError) {
+            // Do something if this is a timeout.
+        }
     }
-
-    await page.$eval("#acessar", btn => btn.click());
 
     //
     // Click para extrato completo
-    await page.waitForSelector("#exibirBoxContaCorrente .botoes a.itau-button");
-
-    await page.$eval("#exibirBoxContaCorrente .botoes a.itau-button", btn =>
-        btn.click()
-    );
+    try {
+        await Promise.all([
+            page.waitForSelector(
+                "#exibirBoxContaCorrente .botoes a.itau-button"
+            ),
+            page.$eval("#acessar", btn => btn.click())
+        ]);
+    } catch (e) {
+        if (e instanceof puppeteer.errors.TimeoutError) {
+            // Do something if this is a timeout.
+        }
+    }
 
     //
     // Seta o filtro para extratos dos últimos 90 dias
     //
-    await page.waitForSelector("#select-filtrarPeriodo select");
+    try {
+        await Promise.all([
+            page.waitForSelector("#select-filtrarPeriodo select"),
+            page.$eval("#exibirBoxContaCorrente .botoes a.itau-button", btn =>
+                btn.click()
+            )
+        ]);
+    } catch (e) {
+        if (e instanceof puppeteer.errors.TimeoutError) {
+            // Do something if this is a timeout.
+        }
+    }
 
     await page.select("#select-filtrarPeriodo select", "90");
 
     //
     // Retorna tabela de extratos
     //
-    await page.waitForSelector("#gridLancamentos-pessoa-fisica");
+    try {
+        await page.waitForSelector("#gridLancamentos-pessoa-fisica");
+    } catch (e) {
+        if (e instanceof puppeteer.errors.TimeoutError) {
+            // Do something if this is a timeout.
+        }
+    }
 
     const extractTable = await page.evaluate(() => {
         const rows = Array.from(

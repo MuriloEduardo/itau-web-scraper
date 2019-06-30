@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="app">
     <FinanceComponent/>
   </div>
 </template>
@@ -24,9 +24,6 @@ export default {
 }
 body {
   background-color: #ec7000;
-  display: flex;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
+  margin: 0;
 }
 </style>

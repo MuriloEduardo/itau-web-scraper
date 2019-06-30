@@ -21,14 +21,21 @@ router.post("/", async (req, res) => {
         await Finance.deleteMany({ user: user.id });
 
         // Scrpaer para pegar um novo extrato deste usuario
-        const scraperData = await scraper(req.body);
+        const scraperResponse = await scraper(req.body);
 
-        // Cria novo extrato
-        const finance = await Finance.create({ ...scraperData, user: user.id });
+        if (!scraperResponse.error) {
+            // Cria novo extrato
+            const finance = await Finance.create({
+                ...scraperResponse,
+                user: user.id
+            });
 
-        return res.send(finance);
+            return res.send(finance);
+        } else {
+            return res.status(400).send(scraperResponse);
+        }
     } catch (error) {
-        return res.status(400).send({ error: "Registration failed" });
+        return res.status(400).send({ error: "Something went wrong, try again" });
     }
 });
 
