@@ -9,7 +9,7 @@ module.exports = async credentials => {
     // Configurações
     //
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         devtools: true
     });
 

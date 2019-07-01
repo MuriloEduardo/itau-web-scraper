@@ -3,11 +3,42 @@
     <div class="form">
       <h1>Itaú Web Scraper</h1>
       <form class="main-form" @submit.prevent="submit" action="#" method="post">
-        <img alt="Itaú Logo" src="../assets/itau.svg" width="100" class="logo">
+        <img alt="Itaú Logo" src="../assets/img/itau.svg" width="100" class="logo" />
         <div class="inputs">
-          <input name="agency" v-model="agency" placeholder="Agência" v-mask="'####'" autofocus>
-          <input name="account" v-model="account" placeholder="Conta" v-mask="'#####-#'">
-          <input name="password" v-model="password" placeholder="Senha" type="password">
+          <div class="form-group">
+            <label for="agency">Agência*</label>
+            <input
+              id="agency"
+              name="agency"
+              v-model="agency"
+              placeholder="1234"
+              v-mask="'####'"
+              autofocus
+            />
+            <small v-if="errors.agency">{{ errors.agency }}</small>
+          </div>
+          <div class="form-group">
+            <label for="account">Conta*</label>
+            <input
+              id="account"
+              name="account"
+              v-model="account"
+              placeholder="12345-6"
+              v-mask="'#####-#'"
+            />
+            <small v-if="errors.account">{{ errors.account }}</small>
+          </div>
+          <div class="form-group">
+            <label for="password">Senha*</label>
+            <input
+              id="password"
+              name="password"
+              v-model="password"
+              placeholder="*******"
+              type="password"
+            />
+            <small v-if="errors.password">{{ errors.password }}</small>
+          </div>
         </div>
         <button type="submit">Entrar</button>
       </form>
@@ -18,31 +49,38 @@
       </div>
     </div>
     <div class="extract">
-      <h5 v-if="error" class="error">{{ error }}</h5>
-      <h3 v-if="balance">
-        <small>Saldo:</small>
-        <span>{{ balance }}</span>
-      </h3>
-      <p v-if="createdAt">{{ createdAt | ptBrTimestamps }}</p>
-      <table v-if="extract.length">
-        <thead>
-          <th>Data</th>
-          <th>Descrição</th>
-          <th>Valor</th>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(launch, index) in extract"
-            v-bind:item="launch"
-            v-bind:index="index"
-            v-bind:key="index"
-          >
-            <td>{{ launch.date }}</td>
-            <td>{{ launch.description }}</td>
-            <td>{{ launch.value }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <h5 v-if="errors.api" class="error">{{ errors.api }}</h5>
+      <small v-if="createdAt" class="createdAt">{{ createdAt | ptBrTimestamps }}</small>
+      <div class="balance" v-if="balance">
+        <small>Saldo</small>
+        <h3>{{ balance }}</h3>
+      </div>
+      <div v-if="extract.length">
+        <h4>Extrato dos último 90 dias</h4>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(launch, index) in extract"
+                v-bind:item="launch"
+                v-bind:index="index"
+                v-bind:key="index"
+              >
+                <td>{{ launch.date }}</td>
+                <td>{{ launch.description }}</td>
+                <td>{{ launch.value }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -59,7 +97,12 @@ export default {
       extract: [],
       balance: "",
       createdAt: "",
-      error: "",
+      errors: {
+        api: null,
+        agency: null,
+        account: null,
+        password: null
+      },
       agency: "",
       account: "",
       password: "",
@@ -68,8 +111,20 @@ export default {
   },
   methods: {
     submit() {
+      if (!this.agency) this.errors.agency = "Campo obrigatório";
+      else this.errors.agency = null;
+
+      if (!this.account) this.errors.account = "Campo obrigatório";
+      else this.errors.account = null;
+
+      if (!this.password) this.errors.password = "Campo obrigatório";
+      else this.errors.password = null;
+
+      if (this.errors.agency || this.errors.account || this.errors.password)
+        return false;
+
       this.loading = true;
-      this.error = undefined;
+      this.errors.api = undefined;
 
       FinanceService.getFinances({
         agency: this.agency,
@@ -86,104 +141,33 @@ export default {
           this.loading = false;
         })
         .catch(error => {
-          this.error = error.response ? error.response.data.error : error;
-          
+          this.errors.api = error.response ? error.response.data.error : error;
+
           this.loading = false;
         });
     }
   },
-  directives: { mask }
+  directives: { mask },
+  watch: {
+    agency: function(val) {
+      if (val && val.length != 4) {
+        this.errors.agency = "Deve ter 4 digitos";
+      } else {
+        this.errors.agency = null;
+      }
+    },
+    account: function(val) {
+      if (val && val.length != 7) {
+        this.errors.account = "Deve ter 6 digitos";
+      } else {
+        this.errors.account = null;
+      }
+    },
+    password: function(val) {
+      if (this.errors.password && val) {
+        this.errors.password = null;
+      }
+    }
+  }
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss" scoped>
-@keyframes ellipsis {
-  to {
-    width: 1.25em;
-  }
-}
-@-webkit-keyframes ellipsis {
-  to {
-    width: 1.25em;
-  }
-}
-.finance {
-  display: flex;
-  padding: 1rem;
-  .form {
-    h1 {
-      text-align: center;
-      color: #fff;
-    }
-    flex: 1;
-    .main-form {
-      display: flex;
-      flex-direction: column;
-      .logo {
-        margin: 0.5rem auto;
-      }
-      .inputs {
-        display: flex;
-        input {
-          width: 100%;
-          margin: 0.5rem;
-          background-color: rgba(255, 255, 255, 0.2);
-          color: #fff;
-          border: none;
-          padding: 24px;
-          border-radius: 4px;
-          font-weight: bold;
-          font-size: 1rem;
-          outline-color: rgba(255, 255, 255, 0.05);
-        }
-        input::placeholder {
-          color: #fff;
-        }
-      }
-      button {
-        margin: 0.5rem;
-        padding: 24px;
-        border-radius: 4px;
-        background-color: #ec7000;
-        border: none;
-        color: #fff;
-        text-align: center;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        font-size: 1rem;
-        outline-color: rgba(255, 255, 255, 0.05);
-        font-weight: bold;
-      }
-      button:hover {
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
-          0 10px 10px rgba(0, 0, 0, 0.22);
-      }
-    }
-    .loading {
-      color: #fff;
-      font-size: 1rem;
-    }
-    .loading h4:after {
-      overflow: hidden;
-      display: inline-block;
-      vertical-align: bottom;
-      -webkit-animation: ellipsis steps(4, end) 900ms infinite;
-      animation: ellipsis steps(4, end) 900ms infinite;
-      content: "\2026"; /* ascii code for the ellipsis character */
-      width: 0px;
-    }
-  }
-  .extract {
-    flex: 1;
-    .error {
-      color: #fff;
-      font-size: 1rem;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      padding: 14px;
-    }
-  }
-}
-</style>

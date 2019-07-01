@@ -1,11 +1,12 @@
 <template>
   <div id="app" class="app">
-    <FinanceComponent/>
+    <FinanceComponent />
   </div>
 </template>
 
 <script>
 import FinanceComponent from "./FinanceComponent.vue";
+import "../assets/scss/style.scss";
 
 export default {
   name: "app",
@@ -14,16 +15,3 @@ export default {
   }
 };
 </script>
-
-<style>
-* {
-  box-sizing: border-box;
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-body {
-  background-color: #ec7000;
-  margin: 0;
-}
-</style>

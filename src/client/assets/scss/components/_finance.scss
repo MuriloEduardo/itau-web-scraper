@@ -1,0 +1,128 @@
+@keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}
+@-webkit-keyframes ellipsis {
+    to {
+        width: 1.25em;
+    }
+}
+.finance {
+    display: flex;
+    padding: 1rem;
+    align-items: center;
+    .form {
+        padding: 1rem;
+        h1 {
+            text-align: center;
+        }
+        flex: 1;
+        .main-form {
+            display: flex;
+            flex-direction: column;
+            .logo {
+                margin: 0.5rem auto;
+            }
+            .inputs {
+                display: flex;
+                .form-group {
+                    margin: 0.5rem;
+                    input {
+                        margin-top: 0.2rem;
+                        width: 100%;
+                        background-color: rgba($white, 0.2);
+                        border: none;
+                        padding: 24px;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        font-size: 1rem;
+                        outline-color: rgba($white, 0.05);
+                    }
+                }
+            }
+            button {
+                margin: 0.5rem;
+                padding: 24px;
+                border-radius: 4px;
+                background-color: $primary;
+                border: none;
+                text-align: center;
+                cursor: pointer;
+                box-shadow: 0 1px 3px rgba($black, 0.12),
+                    0 1px 2px rgba($black, 0.24);
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                font-size: 1rem;
+                outline-color: rgba($white, 0.05);
+                font-weight: bold;
+                color: inherit;
+            }
+            button:hover {
+                box-shadow: 0 14px 28px rgba($black, 0.25),
+                    0 10px 10px rgba($black, 0.22);
+            }
+        }
+        .loading {
+            font-size: 1rem;
+        }
+        .loading h4:after {
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: bottom;
+            -webkit-animation: ellipsis steps(4, end) 900ms infinite;
+            animation: ellipsis steps(4, end) 900ms infinite;
+            content: "\2026"; /* ascii code for the ellipsis character */
+            width: 0px;
+        }
+    }
+    .extract {
+        flex: 1;
+        padding: 1rem;
+        .error {
+            font-size: 1rem;
+            background-color: rgba($white, 0.1);
+            border-radius: 4px;
+            padding: 14px;
+        }
+        .balance {
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            padding: 24px;
+            background-color: rgba($white, 0.3);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            -ms-flex: 0 0 33.333333%;
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+        .table-responsive {
+            display: block;
+            width: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: 250px;
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                thead {
+                    background-color: rgba($white, 0.1);
+                    tr {
+                        th {
+                            padding: 1rem;
+                            text-align: left;
+                        }
+                    }
+                }
+                tbody {
+                    tr {
+                        td {
+                            padding: 0.8rem;
+                            border-bottom: solid thin rgba($white, 0.1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
